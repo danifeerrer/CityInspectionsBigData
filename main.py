@@ -10,21 +10,21 @@ db = client['city_inspections']
 collection = db['inspections']
 
 
+# Function to fetch and insert data if database is empty
+def fetch_and_insert_data(url):
+    if collection.count_documents({}) == 0:
+        response = requests.get(url)
+        for line in response.iter_lines():
+            if line:
+                document = json.loads(line)
+                document['_id'] = document['_id']['$oid']
+                collection.insert_one(document)
+        print("Documents inserted successfully.")
+    else:
+        print("Database already contains data. No need to fetch.")
+
 url = "https://raw.githubusercontent.com/ozlerhakan/mongodb-json-files/master/datasets/city_inspections.json"
-response = requests.get(url)
-
-'''
-# Task 1 , parse each line as JSON and insert into the collection
-for line in response.iter_lines():
-    if line:
-        document = json.loads(line)
-        # Assigning value of $oid directly to _id
-        document['_id'] = document['_id']['$oid']
-        collection.insert_one(document)
-
-print("Documents inserted successfully.")
-
-'''
+fetch_and_insert_data(url)
 
 # Task 2 Count the number of inspections 
 
@@ -171,48 +171,30 @@ def print_random_five_businesses_by_zip_code(zip_code):
         
 
 def main():
-    
     year = input("Enter the year to count inspections: ")
-    
-    # Call the function to count inspections for the specified year
     total_inspections = count_inspections_by_year(year)
-    
-    # Display the result
     print(f"Total inspections in {year}: {total_inspections}")
 
-
     business_name = input("Enter the name of the business: ")
-    
-    # Call the function to check violation for the input business
     check_violation_for_business(business_name)
     
-    # Call the function to count the number of violations in the bronx
     count_bronx = num_violations_by_borough("bronx")
     print("Number of violations in the Bronx " + str(count_bronx))
     
-    # Call the function to count the number of violations in brooklyn
     count_brooklyn = num_violations_by_borough("brooklyn")
     print("Number of violations in Brooklyn " + str(count_brooklyn))
     
-    # Print the difference between the number of violations in brooklyn and the bronx
     print("The difference between the number of violations in Brooklyn and the Bronx is " + str(abs(count_bronx-count_brooklyn)))
     
-    # Call the function to print the first 5 businesses in brooklyn
     print("-------------")
     print_first_five_businesses_in_borough("brooklyn")
     
-    # Call the function to print the first 5 businesses in the bronx
     print("-------------")
     print_first_five_businesses_in_borough("bronx")
     
-    # Ask the user for a zip code in one of the 5 boroughs
     zip_code = int(input("Enter a zip code in one of the 5 boroughs: "))
-    
-    # Call the function to print 5 random businesses in the user specified zip code
     print_random_five_businesses_by_zip_code(zip_code)
     
-
-
 
 if __name__ == "__main__":
     main()
